@@ -21,8 +21,8 @@ public partial class PMSDbContext : DbContext
     public virtual DbSet<Product> Products { get; set; }
 
     public virtual DbSet<SubCategory> SubCategories { get; set; }
+    public virtual DbSet<User> Users { get; set; }
 
-  
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Category>(entity =>
@@ -79,6 +79,22 @@ public partial class PMSDbContext : DbContext
                 .HasConstraintName("FK_SubCategories_Categories");
         });
 
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasKey(e => e.UserId).HasName("PK__Users__1788CC4C4E9AD622");
+
+            entity.HasIndex(e => e.Email, "UQ__Users__A9D1053416357E2F").IsUnique();
+
+            entity.Property(e => e.CreatedAt).HasColumnType("datetime");
+            entity.Property(e => e.Email)
+                .HasMaxLength(100)
+                .IsUnicode(false);
+            entity.Property(e => e.FirstName).HasMaxLength(50);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.LastName).HasMaxLength(50);
+            entity.Property(e => e.PasswordHash).HasMaxLength(255);
+            entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
+        });
 
         OnModelCreatingPartial(modelBuilder);
     }
