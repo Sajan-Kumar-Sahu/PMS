@@ -64,15 +64,6 @@ namespace Pms.Server.Controllers
             return Ok("Category Updated successfully");
         }
 
-        [HttpGet("{id}/Products")]
-        public async Task<IActionResult> GetProductsByCategory(int id)
-        {
-            var products = await _productService
-                .GetByCategoryIdAsync(id);
-
-            return Ok(products);
-        }
-
 
     }
 }

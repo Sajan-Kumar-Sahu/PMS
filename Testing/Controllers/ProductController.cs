@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Pms.Dto.ProductDto;
 using Pms.Service.Interface;
-using PmsRepository.Models;
 
 namespace Pms.Server.Controllers
 {
@@ -11,10 +9,12 @@ namespace Pms.Server.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductService _productService;
+        private readonly ICategoryService _categoryService;
 
-        public ProductController(IProductService productService)
+        public ProductController(IProductService productService, ICategoryService categoryService)
         {
             _productService = productService;
+            _categoryService = categoryService;
         }
 
         [HttpGet("GetAll")]
@@ -32,6 +32,15 @@ namespace Pms.Server.Controllers
                 return NotFound();
 
             return Ok(product);
+        }
+
+        [HttpGet("category/{id}")]
+        public async Task<IActionResult> GetProductsByCategory(int id)
+        {
+            var products = await _productService
+                .GetByCategoryIdAsync(id);
+
+            return Ok(products);
         }
 
         [HttpPost("Create")]
@@ -69,5 +78,6 @@ namespace Pms.Server.Controllers
             var sku = await _productService.GetNextSkuAsync();
             return Ok(sku);
         }
+
     }
 }
