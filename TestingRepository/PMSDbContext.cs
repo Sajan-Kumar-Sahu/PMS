@@ -81,9 +81,9 @@ public partial class PMSDbContext : DbContext
         });
         modelBuilder.Entity<Users>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PK__Users__1788CC4CE2C53AC7");
+            entity.HasKey(e => e.UserId).HasName("PK__Users__1788CC4C4E9AD622");
 
-            entity.HasIndex(e => e.Email, "UQ__Users__A9D1053437DDA88A").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__Users__A9D1053416357E2F").IsUnique();
 
             entity.Property(e => e.CreatedAt).HasColumnType("datetime");
             entity.Property(e => e.Email)
@@ -93,6 +93,8 @@ public partial class PMSDbContext : DbContext
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.LastName).HasMaxLength(50);
             entity.Property(e => e.PasswordHash).HasMaxLength(255);
+            entity.Property(e => e.RefreshToken).HasMaxLength(500);
+            entity.Property(e => e.RefreshTokenExpiryTime).HasColumnType("datetime");
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
         });
 

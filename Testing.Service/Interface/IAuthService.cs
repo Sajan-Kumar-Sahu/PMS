@@ -1,5 +1,4 @@
 ﻿using Pms.Dto.AuthDto;
-using PmsRepository.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +10,7 @@ namespace Pms.Service.Interface
     public interface IAuthService
     {
         Task RegisterAsync(RegisterDto dto);
-        Task<Users?> ValidateUserAsync(LoginDto dto);
-
+        Task<AuthResponseDto?> LoginAsync(LoginDto dto);
+        Task<AuthResponseDto?> RefreshTokenAsync(string refreshToken);
     }
 }

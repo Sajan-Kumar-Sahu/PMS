@@ -6,6 +6,7 @@ using Shared.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,10 +15,12 @@ namespace Pms.Service.Service
     public class AuthService : IAuthService
     {
         private readonly IuserRepository _userRepository;
+        private readonly Ijwtservice _jwtService;
 
-        public AuthService(IuserRepository userRepository)
+        public AuthService(IuserRepository userRepository, Ijwtservice jwtService)
         {
             _userRepository = userRepository;
+            _jwtService = jwtService;
         }
 
         public async Task RegisterAsync(RegisterDto dto)
@@ -43,14 +46,72 @@ namespace Pms.Service.Service
             }
         }
 
-        public async Task<Users?> ValidateUserAsync(LoginDto dto)
+        public async Task<AuthResponseDto?> LoginAsync(LoginDto dto)
         {
             var user = await _userRepository.GetByEmailAsync(dto.Email);
+
             if (user == null || !user.IsActive)
                 return null;
 
             bool isValid = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash);
-            return isValid ? user : null;
+            if (!isValid)
+                return null;
+
+            var accessToken = _jwtService.GenerateToken(user);
+            var refreshToken = _jwtService.GenerateRefreshToken();
+
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+
+            await _userRepository.UpdateAsync(user);
+
+            return new AuthResponseDto
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshToken,
+                AccessTokenExpiresAt = DateTime.UtcNow.AddMinutes(10),
+
+                UserId = user.UserId,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName
+            };
         }
+
+        public async Task<AuthResponseDto?> RefreshTokenAsync(string refreshToken)
+        {
+            var user = await _userRepository.GetByRefreshTokenAsync(refreshToken);
+
+            if (user == null ||
+                user.RefreshTokenExpiryTime == null ||
+                user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            {
+                return null;
+            }
+
+            // ROTATION (VERY IMPORTANT)
+            var newRefreshToken = _jwtService.GenerateRefreshToken();
+
+            user.RefreshToken = newRefreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+
+            await _userRepository.UpdateAsync(user);
+
+            var newAccessToken = _jwtService.GenerateToken(user);
+
+            return new AuthResponseDto
+            {
+                AccessToken = newAccessToken,
+                RefreshToken = newRefreshToken,
+                AccessTokenExpiresAt = DateTime.UtcNow.AddMinutes(15),
+
+                UserId = user.UserId,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName
+            };
+        }
+
+
     }
 }

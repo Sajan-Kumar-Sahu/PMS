@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Pms.Dto.AuthDto;
 using Pms.Service.Interface;
-using PmsRepository.Interface;
+
 
 namespace Pms.Server.Controllers
 {
@@ -13,12 +13,10 @@ namespace Pms.Server.Controllers
 
 
         private readonly IAuthService _authService;
-        private readonly Ijwtservice _jwtService;
 
-        public AuthController(IAuthService authService,Ijwtservice jwtservice)
+        public AuthController(IAuthService authService)
         {
             _authService = authService;
-            _jwtService = jwtservice;
         }
 
         [HttpPost("register")]
@@ -31,21 +29,23 @@ namespace Pms.Server.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto dto)
         {
-            var user = await _authService.ValidateUserAsync(dto);
-            if (user == null)
+            var result = await _authService.LoginAsync(dto);
+
+            if (result == null)
                 return Unauthorized("Invalid email or password");
 
-               var token = _jwtService.GenerateToken(user);
+            return Ok(result);
+        }
 
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken(RefreshTokenDto dto)
+        {
+            var result = await _authService.RefreshTokenAsync(dto.RefreshToken);
 
-            return Ok(new
-            { 
-                token,
-                user.UserId,
-                user.Email,
-                user.FirstName,
-                user.LastName
-            });
+            if (result == null)
+                return Unauthorized("Invalid or expired refresh token");
+
+            return Ok(result);
         }
     }
 }
