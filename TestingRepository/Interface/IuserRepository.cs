@@ -13,5 +13,8 @@ namespace PmsRepository.Interface
         Task<Users?> GetByEmailAsync(string email);
         Task AddAsync(Users user);
         Task SaveAsync();
+        Task UpdateAsync(Users user);
+
+        Task<Users?> GetByRefreshTokenAsync(string refreshToken);
     }
 }

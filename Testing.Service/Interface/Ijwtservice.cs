@@ -11,5 +11,8 @@ namespace Pms.Service.Interface
     {
 
         string GenerateToken(Users user);
+
+        string GenerateRefreshToken();
+
     }
 }

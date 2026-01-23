@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Pms.Dto.ProductDto;
 using Pms.Service.Interface;
 
 namespace Pms.Server.Controllers
 {
     [Route("api/products")]
+    [Authorize]
     [ApiController]
     public class ProductController : ControllerBase
     {
@@ -18,6 +20,7 @@ namespace Pms.Server.Controllers
         }
 
         [HttpGet("GetAll")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAll()
         {
             var products = await _productService.GetAllAsync();
@@ -25,6 +28,7 @@ namespace Pms.Server.Controllers
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetById(int id)
         {
             var product = await _productService.GetByIdAsync(id);
@@ -59,7 +63,7 @@ namespace Pms.Server.Controllers
             if (!updated)
                 return NotFound();
 
-            return NoContent();
+            return Ok("Product Updated Successfully");
         }
 
         [HttpPost("Delete/{id}")]
@@ -69,7 +73,7 @@ namespace Pms.Server.Controllers
             if (!deleted)
                 return NotFound();
 
-            return NoContent();
+            return Ok("Product Deleted Successfully");
         }
 
         [HttpGet("next-sku")]

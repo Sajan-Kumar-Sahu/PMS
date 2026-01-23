@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Pms.Dto.categoryDto;
 using Pms.Service.Interface;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 namespace Pms.Server.Controllers
 {
     [Route("api/categories")]
+    [Authorize]
     [ApiController]
     public class CategoryController : ControllerBase
     {
@@ -28,6 +30,7 @@ namespace Pms.Server.Controllers
         }
 
         [HttpGet("GetAll")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAll()
         {
             var categories = await _categoryService.GetAllAsync();
@@ -35,6 +38,7 @@ namespace Pms.Server.Controllers
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetById(int id)
         {
             var category = await _categoryService.GetByIdAsync(id);
