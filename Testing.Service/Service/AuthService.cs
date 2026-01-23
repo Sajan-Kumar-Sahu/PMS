@@ -103,7 +103,7 @@ namespace Pms.Service.Service
             {
                 AccessToken = newAccessToken,
                 RefreshToken = newRefreshToken,
-                AccessTokenExpiresAt = DateTime.UtcNow.AddMinutes(15),
+                AccessTokenExpiresAt = DateTime.UtcNow.AddMinutes(10),
 
                 UserId = user.UserId,
                 Email = user.Email,
