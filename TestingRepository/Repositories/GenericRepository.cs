@@ -55,7 +55,5 @@ namespace PmsRepository.Repositories
                 .Select(p => p.Sku)
                 .FirstOrDefaultAsync();
         }
-       
-        
     }
 }

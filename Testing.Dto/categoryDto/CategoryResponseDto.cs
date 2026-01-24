@@ -9,7 +9,7 @@ namespace Pms.Dto.categoryDto
     public class CategoryResponseDto
     {
         public int CategoryId { get; set; }
-        public string? CategoryDescription { get; set; }
         public string CategoryName { get; set; } = null!;
+        public string? CategoryDescription { get; set; }
     }
 }

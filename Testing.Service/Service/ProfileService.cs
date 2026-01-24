@@ -15,12 +15,10 @@ namespace Pms.Service.Service
     public class ProfileService : IProfileService
     {
         private readonly IGenericRepository<Users> _userRepository;
-        private readonly IuserRepository _userRepo;
 
-        public ProfileService(IGenericRepository<Users> userRepository, IuserRepository userRepo)
-        {
+        public ProfileService(IGenericRepository<Users> userRepository) 
+        { 
             _userRepository = userRepository;
-            _userRepo = userRepo;
         }
 
         public async Task<UserProfileDto> GetProfileAsync(ClaimsPrincipal principal)
@@ -43,7 +41,8 @@ namespace Pms.Service.Service
             user.FirstName = dto.FirstName;
             user.LastName = dto.LastName;
 
-            await _userRepo.UpdateAsync(user);
+            _userRepository.Update(user);
+            await _userRepository.SaveAsync();
         }
 
         private static int GetUserId(ClaimsPrincipal principal)

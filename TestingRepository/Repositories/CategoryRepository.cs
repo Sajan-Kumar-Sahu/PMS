@@ -16,8 +16,7 @@ namespace PmsRepository.Repositories
         : base(context)
         {
         }
-        public async Task<bool> ExistsAsync(
-    Expression<Func<Category, bool>> predicate)
+        public async Task<bool> ExistsAsync(Expression<Func<Category, bool>> predicate)
         {
             return await _context.Categories.AnyAsync(predicate);
         }

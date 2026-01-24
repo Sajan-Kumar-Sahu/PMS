@@ -12,15 +12,18 @@ namespace Pms.Service.Service
         private readonly IGenericRepository<Product> _productRepo;
         private readonly IGenericRepository<Category> _categoryRepo;
         private readonly IProductRepository _productRepository;
+        private readonly ICurrentUserContext _currentUser;
 
         public ProductService(
             IGenericRepository<Product> productRepo,
             IGenericRepository<Category> categoryRepo,
-            IProductRepository productRepository)
+            IProductRepository productRepository,
+            ICurrentUserContext currentUser)
         {
             _productRepo = productRepo;
             _productRepository = productRepository;
             _categoryRepo = categoryRepo;
+            _currentUser = currentUser;
         }
 
         public async Task<bool> DeleteAsync(int id)
@@ -34,7 +37,7 @@ namespace Pms.Service.Service
 
             product.IsActive = false;
             product.UpdatedDate = DateTime.UtcNow;
-            product.UpdatedBy = 1;
+            product.UpdatedBy = _currentUser.UserId;
 
             _productRepo.Update(product);
             await _productRepo.SaveAsync();
@@ -66,7 +69,7 @@ namespace Pms.Service.Service
                 .ToDictionary(c => c.CategoryId, c => c.CategoryName);
 
             return products
-                .Where(p => p.IsActive)
+                .Where(p => p.IsActive).OrderByDescending(p=>p.ProductId)
                 .Select(p => new ProductResponseDto
                 {
                     ProductId = p.ProductId,
@@ -165,8 +168,7 @@ namespace Pms.Service.Service
                 ProductDescription = productCreateDto.ProductDescription,
                 Price = productCreateDto.Price,
                 CreatedDate = DateTime.UtcNow,
-                CreatedBy = 1,
-                UpdatedBy = 0,
+                CreatedBy = _currentUser.UserId,
                 IsActive = true
             };
 
@@ -224,7 +226,7 @@ namespace Pms.Service.Service
             existing.ProductDescription = product.ProductDescription;
             existing.Price = product.Price;
             existing.UpdatedDate = DateTime.UtcNow;
-            existing.UpdatedBy = 1;
+            existing.UpdatedBy = _currentUser.UserId;
 
             _productRepo.Update(existing);
             await _productRepo.SaveAsync();
@@ -250,6 +252,11 @@ namespace Pms.Service.Service
 
             var products = await _productRepository
                 .GetByCategoryIdAsync(categoryId);
+
+            if (!products.Any())
+            {
+                throw new NotFoundException("No products found in this category.");
+            }
 
             return products.Select(p => new ProductResponseDto
             {

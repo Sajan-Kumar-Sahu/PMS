@@ -3,6 +3,7 @@ using Pms.Service.Interface;
 using PmsRepository.Interface;
 using PmsRepository.Models;
 using Shared.Exceptions;
+using System.Security.Claims;
 
 namespace Pms.Service.Service
 {
@@ -11,11 +12,14 @@ namespace Pms.Service.Service
         private readonly IGenericRepository<Category> _repository;
         private readonly ICategoryRepository _categoryRepository;
         private readonly IProductRepository _productRepository;
-        public CategoryService(IGenericRepository<Category> repository, ICategoryRepository categoryRepository, IProductRepository productRepository)
+        private readonly ICurrentUserContext _currentUser;
+        
+        public CategoryService(IGenericRepository<Category> repository, ICategoryRepository categoryRepository, IProductRepository productRepository, ICurrentUserContext currentUser)
         {
             _repository = repository;
             _categoryRepository = categoryRepository;
             _productRepository = productRepository;
+            _currentUser = currentUser;
         }
         public async Task CreateAsync(CategoryCreateDto categoryCreateDto)
         {
@@ -34,8 +38,7 @@ namespace Pms.Service.Service
                 CategoryName = categoryCreateDto.CategoryName.Trim(),
                 CategoryDescription = categoryCreateDto.CategoryDescription,
                 CreatedDate = DateTime.Now,
-                CreatedBy = 1,
-                UpdatedBy = 0,
+                CreatedBy = _currentUser.UserId,
                 IsActive = true
             };
 
@@ -65,7 +68,7 @@ namespace Pms.Service.Service
 
             category.IsActive = false;
             category.UpdatedDate = DateTime.Now;
-            category.UpdatedBy = 1;
+            category.UpdatedBy = _currentUser.UserId;
 
             _repository.Update(category);
             await _repository.SaveAsync();
@@ -151,7 +154,7 @@ namespace Pms.Service.Service
             existing.CategoryName = newName;
             existing.CategoryDescription = categoryUpdateDto.CategoryDescription;
             existing.UpdatedDate = DateTime.Now;
-            existing.UpdatedBy = 1;
+            existing.UpdatedBy = _currentUser.UserId;
 
             _repository.Update(existing);
             await _repository.SaveAsync();

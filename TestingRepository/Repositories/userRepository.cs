@@ -17,26 +17,10 @@ namespace PmsRepository.Repositories
         {
             _pmsdbcontext = pMSDbContext;
         }
-        public async Task AddAsync(Users user)
-        {
-            await _pmsdbcontext.Users.AddAsync(user);
-
-        }
-
-        public async Task UpdateAsync(Users user)
-        {
-            _pmsdbcontext.Update(user);
-            await SaveAsync();
-        }
 
         public async Task<Users?> GetByEmailAsync(string email)
         {
             return await _pmsdbcontext.Users.FirstOrDefaultAsync(x => x.Email == email);
-        }
-
-        public async Task SaveAsync()
-        {
-             await _pmsdbcontext.SaveChangesAsync();
         }
 
         public async Task<Users?> GetByRefreshTokenAsync(string refreshToken)

@@ -14,11 +14,9 @@ namespace Pms.Server.Controllers
     public class CategoryController : ControllerBase
     {
         private readonly ICategoryService _categoryService;
-        private readonly IProductService _productService;
-        public CategoryController(ICategoryService categoryService, IProductService productService)
+        public CategoryController(ICategoryService categoryService)
         {
             _categoryService = categoryService;
-            _productService = productService;
         }
 
         [HttpPost("Create")]

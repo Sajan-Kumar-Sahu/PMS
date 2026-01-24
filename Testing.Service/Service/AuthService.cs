@@ -15,12 +15,14 @@ namespace Pms.Service.Service
     public class AuthService : IAuthService
     {
         private readonly IuserRepository _userRepository;
+        private readonly IGenericRepository<Users> _userRepo;
         private readonly Ijwtservice _jwtService;
 
-        public AuthService(IuserRepository userRepository, Ijwtservice jwtService)
+        public AuthService(IuserRepository userRepository, Ijwtservice jwtService, IGenericRepository<Users> userRepo)
         {
             _userRepository = userRepository;
             _jwtService = jwtService;
+            _userRepo = userRepo;
         }
 
         public async Task RegisterAsync(RegisterDto dto)
@@ -41,8 +43,8 @@ namespace Pms.Service.Service
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow
                 };
-                await _userRepository.AddAsync(users);
-                await _userRepository.SaveAsync();
+                await _userRepo.AddAsync(users);
+                await _userRepo.SaveAsync();
             }
         }
 
@@ -63,7 +65,8 @@ namespace Pms.Service.Service
             user.RefreshToken = refreshToken;
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
 
-            await _userRepository.UpdateAsync(user);
+            _userRepo.Update(user);
+            await _userRepo.SaveAsync();
 
             return new AuthResponseDto
             {
@@ -95,7 +98,8 @@ namespace Pms.Service.Service
             user.RefreshToken = newRefreshToken;
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
 
-            await _userRepository.UpdateAsync(user);
+            _userRepo.Update(user);
+            await _userRepo.SaveAsync();
 
             var newAccessToken = _jwtService.GenerateToken(user);
 
