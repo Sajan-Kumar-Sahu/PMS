@@ -67,6 +67,7 @@ namespace Pms.Service.Service
 
             return products
                 .Where(p => p.IsActive)
+                .OrderByDescending(p=>p.ProductId)
                 .Select(p => new ProductResponseDto
                 {
                     ProductId = p.ProductId,
