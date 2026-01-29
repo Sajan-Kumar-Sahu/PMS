@@ -29,6 +29,8 @@ public partial class Product
 
     public bool IsActive { get; set; }
 
+    public string? ProductImageUrl { get; set; }
+
     public virtual Category Category { get; set; } = null!;
 
     public virtual SubCategory? SubCategory { get; set; }

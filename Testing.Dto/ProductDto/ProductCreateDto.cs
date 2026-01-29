@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,6 +16,7 @@ namespace Pms.Dto.ProductDto
         public decimal Price { get; set; }
 
         public int CategoryId { get; set; }
+        public IFormFile? ProductImage { get; set; }
 
 
     }

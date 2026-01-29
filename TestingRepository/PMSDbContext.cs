@@ -49,6 +49,7 @@ public partial class PMSDbContext : DbContext
             entity.Property(e => e.Price).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.ProductDescription).HasMaxLength(500);
             entity.Property(e => e.ProductName).HasMaxLength(150);
+            entity.Property(e => e.ProductImageUrl).HasMaxLength(500);
             entity.Property(e => e.Sku)
                 .HasMaxLength(20)
                 .IsUnicode(false)

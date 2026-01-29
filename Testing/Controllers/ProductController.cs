@@ -11,12 +11,10 @@ namespace Pms.Server.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductService _productService;
-        private readonly ICategoryService _categoryService;
 
-        public ProductController(IProductService productService, ICategoryService categoryService)
+        public ProductController(IProductService productService)
         {
             _productService = productService;
-            _categoryService = categoryService;
         }
 
         [HttpGet("GetAll")]
@@ -48,7 +46,7 @@ namespace Pms.Server.Controllers
         }
 
         [HttpPost("Create")]
-        public async Task<IActionResult> Create(ProductCreateDto productCreateDto)
+        public async Task<IActionResult> Create([FromForm] ProductCreateDto productCreateDto)
         {
             await _productService.CreateAsync(productCreateDto);
             return Ok("Product created successfully");
@@ -56,7 +54,7 @@ namespace Pms.Server.Controllers
         }
 
         [HttpPost("Update/{id}")]
-        public async Task<IActionResult> Update(int id, ProductUpdateDto productUpdateDto)
+        public async Task<IActionResult> Update(int id, [FromForm] ProductUpdateDto productUpdateDto)
         {
 
             var updated = await _productService.UpdateAsync(id,productUpdateDto);

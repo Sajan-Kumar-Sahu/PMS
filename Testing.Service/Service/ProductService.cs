@@ -1,4 +1,5 @@
-﻿using Pms.Dto.ProductDto;
+﻿using Pms.Dto.categoryDto;
+using Pms.Dto.ProductDto;
 using Pms.Dto.ProductDto.ProductDto;
 using Pms.Service.Interface;
 using PmsRepository.Interface;
@@ -13,17 +14,20 @@ namespace Pms.Service.Service
         private readonly IGenericRepository<Category> _categoryRepo;
         private readonly IProductRepository _productRepository;
         private readonly ICurrentUserContext _currentUser;
+        private readonly IImageService _imageService;
 
         public ProductService(
             IGenericRepository<Product> productRepo,
             IGenericRepository<Category> categoryRepo,
             IProductRepository productRepository,
-            ICurrentUserContext currentUser)
+            ICurrentUserContext currentUser,
+            IImageService imageService)
         {
             _productRepo = productRepo;
             _productRepository = productRepository;
             _categoryRepo = categoryRepo;
             _currentUser = currentUser;
+            _imageService = imageService;
         }
 
         public async Task<bool> DeleteAsync(int id)
@@ -69,7 +73,7 @@ namespace Pms.Service.Service
                 .ToDictionary(c => c.CategoryId, c => c.CategoryName);
 
             return products
-                .Where(p => p.IsActive).OrderByDescending(p=>p.ProductId)
+                .Where(p => p.IsActive).OrderByDescending(p=>p.UpdatedDate ?? p.CreatedDate)
                 .Select(p => new ProductResponseDto
                 {
                     ProductId = p.ProductId,
@@ -79,6 +83,7 @@ namespace Pms.Service.Service
                             ? categoryName
                             : "N/A",
                     Price = p.Price,
+                    ProductImageUrl = p.ProductImageUrl
                 })
                 .ToList();
         }
@@ -112,6 +117,7 @@ namespace Pms.Service.Service
                 ProductName = product.ProductName,
                 Price = product.Price,
                 ProductDescription = product.ProductDescription,
+                ProductImageUrl = product.ProductImageUrl,
                 Sku = product.Sku,
                 CategoryName = category?.CategoryName ?? "N/A",
                 CreatedDate = product.CreatedDate
@@ -160,12 +166,21 @@ namespace Pms.Service.Service
             var lastSku = await _productRepo.GetLastSkuAsync();
             var newSku = SkuGenerator.GenerateNextSku(lastSku);
 
+            string? imageUrl = null;
+            if (productCreateDto.ProductImage != null)
+            {
+                imageUrl = await _imageService.SaveImageAsync(
+                    productCreateDto.ProductImage,
+                    "products"
+                );
+            }
             var product = new Product
             {
                 Sku = newSku,
                 ProductName = productCreateDto.ProductName.Trim(),
                 CategoryId = productCreateDto.CategoryId,
                 ProductDescription = productCreateDto.ProductDescription,
+                ProductImageUrl = imageUrl,
                 Price = productCreateDto.Price,
                 CreatedDate = DateTime.UtcNow,
                 CreatedBy = _currentUser.UserId,
@@ -220,7 +235,19 @@ namespace Pms.Service.Service
                     "Another product with the same name already exists in this category."
                 );
             }
+            string? newImageUrl = null;
+            string? oldImageUrl = existing.ProductImageUrl;
 
+            if (product.ProductImage != null)
+            {
+                // Save new image (validated inside ImageService)
+                newImageUrl = await _imageService.SaveImageAsync(
+                    product.ProductImage,
+                    "products"
+                );
+
+                existing.ProductImageUrl = newImageUrl;
+            }
             existing.ProductName = newName;
             existing.CategoryId = product.CategoryId;
             existing.ProductDescription = product.ProductDescription;
@@ -228,10 +255,26 @@ namespace Pms.Service.Service
             existing.UpdatedDate = DateTime.UtcNow;
             existing.UpdatedBy = _currentUser.UserId;
 
-            _productRepo.Update(existing);
-            await _productRepo.SaveAsync();
+            try
+            {
+                _productRepo.Update(existing);
+                await _productRepo.SaveAsync();
 
-            return true;
+                if (!string.IsNullOrEmpty(newImageUrl) &&
+                    !string.IsNullOrEmpty(oldImageUrl))
+                {
+                    _imageService.DeleteImage(oldImageUrl);
+                }
+
+                return true;
+            }
+            catch
+            {
+                if (!string.IsNullOrEmpty(newImageUrl))
+                    _imageService.DeleteImage(newImageUrl);
+
+                throw;
+            }
         }
 
         public async Task<string> GetNextSkuAsync()

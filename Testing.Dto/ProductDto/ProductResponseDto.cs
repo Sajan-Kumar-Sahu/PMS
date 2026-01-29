@@ -13,6 +13,7 @@ namespace Pms.Dto.ProductDto.ProductDto
         public decimal Price { get; set; }
         public string CategoryName { get; set; } = null!;
 
+        public string? ProductImageUrl { get; set; }
 
     }
 }
