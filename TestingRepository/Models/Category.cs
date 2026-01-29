@@ -21,6 +21,8 @@ public partial class Category
 
     public bool IsActive { get; set; }
 
+    public string? CategoryImageUrl { get; set; }
+
     public virtual ICollection<Product> Products { get; set; } = new List<Product>();
 
     public virtual ICollection<SubCategory> SubCategories { get; set; } = new List<SubCategory>();

@@ -13,13 +13,20 @@ namespace Pms.Service.Service
         private readonly ICategoryRepository _categoryRepository;
         private readonly IProductRepository _productRepository;
         private readonly ICurrentUserContext _currentUser;
+        private readonly IImageService _imageService;
         
-        public CategoryService(IGenericRepository<Category> repository, ICategoryRepository categoryRepository, IProductRepository productRepository, ICurrentUserContext currentUser)
+        public CategoryService(
+            IGenericRepository<Category> repository,
+            ICategoryRepository categoryRepository,
+            IProductRepository productRepository,
+            ICurrentUserContext currentUser,
+            IImageService imageService)
         {
             _repository = repository;
             _categoryRepository = categoryRepository;
             _productRepository = productRepository;
             _currentUser = currentUser;
+            _imageService = imageService;
         }
         public async Task CreateAsync(CategoryCreateDto categoryCreateDto)
         {
@@ -33,11 +40,21 @@ namespace Pms.Service.Service
             if (categoryExists)
                 throw new AlreadyExistsException("Category already exists.");
 
+            string? imageUrl = null;
+            if (categoryCreateDto.CategoryImage != null)
+            {
+                imageUrl = await _imageService.SaveImageAsync(
+                    categoryCreateDto.CategoryImage,
+                    "categories"
+                );
+            }
+
             var category = new Category
             {
                 CategoryName = categoryCreateDto.CategoryName.Trim(),
                 CategoryDescription = categoryCreateDto.CategoryDescription,
-                CreatedDate = DateTime.Now,
+                CategoryImageUrl = imageUrl,
+                CreatedDate = DateTime.UtcNow,
                 CreatedBy = _currentUser.UserId,
                 IsActive = true
             };
@@ -67,7 +84,7 @@ namespace Pms.Service.Service
             }
 
             category.IsActive = false;
-            category.UpdatedDate = DateTime.Now;
+            category.UpdatedDate = DateTime.UtcNow;
             category.UpdatedBy = _currentUser.UserId;
 
             _repository.Update(category);
@@ -93,7 +110,8 @@ namespace Pms.Service.Service
                 {
                     CategoryId = c.CategoryId,
                     CategoryName = c.CategoryName,
-                    CategoryDescription = c.CategoryDescription
+                    CategoryDescription = c.CategoryDescription,
+                    CategoryImageUrl = c.CategoryImageUrl
                 })
                 .ToList();
         }
@@ -117,6 +135,7 @@ namespace Pms.Service.Service
                 CategoryId = category.CategoryId,
                 CategoryName = category.CategoryName,
                 CategoryDescription = category.CategoryDescription,
+                CategoryImageUrl = category.CategoryImageUrl,
                 CreatedDate = category.CreatedDate
             };
 
@@ -129,7 +148,7 @@ namespace Pms.Service.Service
                 throw new InvalidOperationAppException("Category name cannot be empty.");
             }
 
-            // 2️⃣ Fetch existing category
+            
             var existing = await _repository.GetByIdAsync(id);
 
             if (existing == null || !existing.IsActive)
@@ -151,15 +170,45 @@ namespace Pms.Service.Service
                 );
             }
 
+            string? newImageUrl = null;
+            string? oldImageUrl = existing.CategoryImageUrl;
+
+            if (categoryUpdateDto.CategoryImage != null)
+            {
+                // Save new image (validated inside ImageService)
+                newImageUrl = await _imageService.SaveImageAsync(
+                    categoryUpdateDto.CategoryImage,
+                    "categories"
+                );
+
+                existing.CategoryImageUrl = newImageUrl;
+            }
+
             existing.CategoryName = newName;
             existing.CategoryDescription = categoryUpdateDto.CategoryDescription;
             existing.UpdatedDate = DateTime.Now;
             existing.UpdatedBy = _currentUser.UserId;
 
-            _repository.Update(existing);
-            await _repository.SaveAsync();
+            try
+            {
+                _repository.Update(existing);
+                await _repository.SaveAsync();
 
-            return true;
+                if (!string.IsNullOrEmpty(newImageUrl) &&
+                    !string.IsNullOrEmpty(oldImageUrl))
+                {
+                    _imageService.DeleteImage(oldImageUrl);
+                }
+
+                return true;
+            }
+            catch
+            {
+                if (!string.IsNullOrEmpty(newImageUrl))
+                    _imageService.DeleteImage(newImageUrl);
+
+                throw;
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,8 @@ namespace Pms.Dto.categoryDto
         public string CategoryName { get; set; } = null!;
 
         public string? CategoryDescription { get; set; }
+
+        public IFormFile? CategoryImage { get; set; }
 
     }
 }

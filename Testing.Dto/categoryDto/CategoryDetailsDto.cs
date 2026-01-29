@@ -13,6 +13,7 @@ namespace Pms.Dto.categoryDto
         public string CategoryName { get; set; } = null!;
 
         public string? CategoryDescription { get; set; }
+        public string? CategoryImageUrl { get; set; }
 
         public DateTime CreatedDate { get; set; }
 

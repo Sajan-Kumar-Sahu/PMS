@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Pms.Server.Middleware;
+using Pms.Server.Services;
 using Pms.Service.Interface;
 using Pms.Service.Service;
 using PmsRepository;
@@ -88,6 +89,7 @@ builder.Services.AddScoped<IuserRepository, userRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<ICurrentUserContext, CurrentUserContext>();
+builder.Services.AddScoped<IImageService, ImageService>();
 
 builder.Services.AddControllers();
 
@@ -137,6 +139,8 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseMiddleware<GlobalExceptionMiddleware>();
+
+app.UseStaticFiles();
 
 app.UseHttpsRedirection();
 

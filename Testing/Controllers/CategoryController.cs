@@ -21,7 +21,7 @@ namespace Pms.Server.Controllers
 
         [HttpPost("Create")]
 
-        public async Task<IActionResult> Create(CategoryCreateDto categoryCreateDto)
+        public async Task<IActionResult> Create([FromForm] CategoryCreateDto categoryCreateDto)
         {
             await _categoryService.CreateAsync(categoryCreateDto);
             return Ok("Category created successfully");
@@ -56,7 +56,7 @@ namespace Pms.Server.Controllers
         }
 
         [HttpPost("Update/{id}")]
-        public async Task<IActionResult> Update(int id, CategoryUpdateDto categoryUpdateDto)
+        public async Task<IActionResult> Update(int id,[FromForm] CategoryUpdateDto categoryUpdateDto)
         {
             var result = await _categoryService.UpdateAsync(id,categoryUpdateDto);
             if (!result)

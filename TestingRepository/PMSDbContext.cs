@@ -32,6 +32,7 @@ public partial class PMSDbContext : DbContext
 
             entity.Property(e => e.CategoryDescription).HasMaxLength(255);
             entity.Property(e => e.CategoryName).HasMaxLength(100);
+            entity.Property(e => e.CategoryImageUrl).HasMaxLength(500);
             entity.Property(e => e.CreatedDate).HasColumnType("datetime");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.UpdatedDate).HasColumnType("datetime");
