@@ -14,6 +14,7 @@ public partial class Users
     public string Email { get; set; } = null!;
 
     public string PasswordHash { get; set; } = null!;
+    public string? ProfileImageUrl { get; set; }
 
     public bool IsActive { get; set; }
 

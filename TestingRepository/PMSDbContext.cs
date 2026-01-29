@@ -94,6 +94,7 @@ public partial class PMSDbContext : DbContext
             entity.Property(e => e.FirstName).HasMaxLength(50);
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.LastName).HasMaxLength(50);
+            entity.Property(e => e.ProfileImageUrl).HasMaxLength(500);
             entity.Property(e => e.PasswordHash).HasMaxLength(255);
             entity.Property(e => e.RefreshToken).HasMaxLength(500);
             entity.Property(e => e.RefreshTokenExpiryTime).HasColumnType("datetime");

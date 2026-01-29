@@ -15,10 +15,12 @@ namespace Pms.Service.Service
     public class ProfileService : IProfileService
     {
         private readonly IGenericRepository<Users> _userRepository;
+        private readonly IImageService _imageService;
 
-        public ProfileService(IGenericRepository<Users> userRepository) 
+        public ProfileService(IGenericRepository<Users> userRepository, IImageService imageService) 
         { 
             _userRepository = userRepository;
+            _imageService = imageService;
         }
 
         public async Task<UserProfileDto> GetProfileAsync(ClaimsPrincipal principal)
@@ -31,7 +33,7 @@ namespace Pms.Service.Service
             return MapToDto(user);
         }
 
-        public async Task UpdateProfileAsync(ClaimsPrincipal principal, UpdateProfileDto dto)
+        public async Task UpdateProfileAsync(ClaimsPrincipal principal, UserProfileUpdateDto dto)
         {
             int userId = GetUserId(principal);
 
@@ -41,8 +43,37 @@ namespace Pms.Service.Service
             user.FirstName = dto.FirstName;
             user.LastName = dto.LastName;
 
-            _userRepository.Update(user);
-            await _userRepository.SaveAsync();
+            string? newImageUrl = null;
+            string? oldImageUrl = user.ProfileImageUrl;
+
+            if (dto.ProfileImage != null)
+            {
+                newImageUrl = await _imageService.SaveImageAsync(
+                   dto.ProfileImage,
+                   "profiles"
+               );
+                user.ProfileImageUrl = newImageUrl;
+            }
+            try
+            {
+                _userRepository.Update(user);
+                await _userRepository.SaveAsync();
+
+                if (!string.IsNullOrEmpty(newImageUrl) &&
+                    !string.IsNullOrEmpty(oldImageUrl))
+                {
+                    _imageService.DeleteImage(oldImageUrl);
+                }
+
+            }
+            catch
+            {
+                if (!string.IsNullOrEmpty(newImageUrl))
+                    _imageService.DeleteImage(newImageUrl);
+
+                throw;
+            }
+            
         }
 
         private static int GetUserId(ClaimsPrincipal principal)
@@ -59,7 +90,8 @@ namespace Pms.Service.Service
                 UserId = user.UserId,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                Email = user.Email
+                Email = user.Email,
+                ProfileImageUrl = user.ProfileImageUrl
             };
         }
     }

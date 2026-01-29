@@ -26,7 +26,7 @@ namespace Pms.Server.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateProfile(UpdateProfileDto dto)
+        public async Task<IActionResult> UpdateProfile([FromForm] UserProfileUpdateDto dto)
         {
             await _profileService.UpdateProfileAsync(User, dto);
             return Ok("Profile Updated Successfully");

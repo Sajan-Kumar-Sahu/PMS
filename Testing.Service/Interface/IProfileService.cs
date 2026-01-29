@@ -11,6 +11,6 @@ namespace Pms.Service.Interface
     public interface IProfileService
     {
         Task<UserProfileDto> GetProfileAsync(ClaimsPrincipal user);
-        Task UpdateProfileAsync(ClaimsPrincipal user, UpdateProfileDto dto);
+        Task UpdateProfileAsync(ClaimsPrincipal user, UserProfileUpdateDto dto);
     }
 }
