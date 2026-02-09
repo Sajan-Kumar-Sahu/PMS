@@ -95,25 +95,33 @@ namespace Pms.Service.Service
 
         public async Task<IEnumerable<CategoryResponseDto>> GetAllAsync()
         {
-            var categories = await _repository.GetAllAsync();
-
-            if (categories == null)
+            try
             {
-                throw new InvalidOperationAppException(
-                    "Failed to retrieve categories."
-                );
-            }
+                var categories = await _repository.GetAllAsync();
 
-            return categories
-                .Where(c => c.IsActive)   // important if you use soft delete
-                .Select(c => new CategoryResponseDto
+                if (categories == null)
                 {
-                    CategoryId = c.CategoryId,
-                    CategoryName = c.CategoryName,
-                    CategoryDescription = c.CategoryDescription,
-                    CategoryImageUrl = c.CategoryImageUrl
-                })
-                .ToList();
+                    throw new InvalidOperationAppException(
+                        "Failed to retrieve categories."
+                    );
+                }
+
+                return categories
+                    .Where(c => c.IsActive)   // important if you use soft delete
+                    .Select(c => new CategoryResponseDto
+                    {
+                        CategoryId = c.CategoryId,
+                        CategoryName = c.CategoryName,
+                        CategoryDescription = c.CategoryDescription,
+                        CategoryImageUrl = c.CategoryImageUrl
+                    })
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
         }
 
         public async Task<CategoryDetailsDto> GetByIdAsync(int id)
